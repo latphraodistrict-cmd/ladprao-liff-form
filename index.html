@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยื่นเอกสาร LINE OA ลาดพร้าว</title>
+    <!-- นำเข้า Tailwind CSS เพื่อความสวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- นำเข้า LINE LIFF SDK -->
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- นำเข้า Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 min-p-4 font-sans">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md mt-6">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 text-center">ระบบส่งเอกสาร LINE OA ลาดพร้าว</h2>
+        
+        <form id="docForm" class="space-y-4">
+            <!-- เลขบัตรประชาชน (Key หลัก) -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700">เลขบัตรประชาชน 13 หลัก *</label>
+                <input type="text" id="national_id" maxlength="13" required 
+                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    placeholder="กรอกเลขบัตรประชาชน 13 หลักเพื่อตรวจสอบข้อมูลเดิม">
+                <p id="searchStatus" class="text-xs text-blue-600 mt-1"></p>
+            </div>
+
+            <!-- ชื่อ-นามสกุล -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700">ชื่อ-นามสกุล *</label>
+                <input type="text" id="full_name" required 
+                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- เบอร์โทรศัพท์ -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700">เบอร์โทรศัพท์ติดต่อ *</label>
+                <input type="tel" id="phone_number" maxlength="10" required 
+                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- สถานะ -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700">สถานะ *</label>
+                <select id="house_status" required 
+                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="">-- เลือกสถานะ --</option>
+                    <option value="เจ้าบ้าน">เจ้าบ้าน</option>
+                    <option value="ผู้เช่า">ผู้เช่า</option>
+                    <option value="ลูกบ้าน">ลูกบ้าน</option>
+                </select>
+            </div>
+
+            <!-- แนบไฟล์ -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700">แนบเอกสาร (รูปภาพ หรือ PDF) *</label>
+                <input type="file" id="document_file" required accept="image/*,.pdf"
+                    class="mt-1 w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            </div>
+
+            <!-- Hidden Field เก็บ LINE User ID และ Drive Folder ID เดิม -->
+            <input type="hidden" id="line_user_id">
+            <input type="hidden" id="drive_folder_id">
+
+            <!-- ปุ่มส่งข้อมูล -->
+            <button type="submit" id="submitBtn"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                ส่งข้อมูล / อัปโหลดเอกสาร
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // ตั้งค่าการเชื่อมต่อ Supabase ของคุณ
+        const SUPABASE_URL = 'https://wvbhjagexbjpyuipbpnx.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'sb_publishable_OPzVGkJk8VeN2-xlzIdaog_FT1rJIQq';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentLineId = '';
+
+        // เริ่มต้น LIFF SDK เมื่อเปิดหน้าเว็บ
+        window.onload = async function() {
+            try {
+                await liff.init({ liffId: "2012104123-sCwmwCsF" });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    currentLineId = profile.userId;
+                    document.getElementById('line_user_id').value = currentLineId;
+                } else {
+                    liff.login();
+                }
+            } catch (error) {
+                console.error("LIFF Initialization failed", error);
+            }
+        };
+
+        // ตรวจสอบเลขบัตรประชาชน 13 หลักเมื่อพิมพ์ครบ
+        document.getElementById('national_id').addEventListener('input', async function(e) {
+            const id13 = e.target.value.trim();
+            const statusText = document.getElementById('searchStatus');
+
+            if (id13.length === 13) {
+                statusText.innerText = "กำลังค้นหาข้อมูลเดิม...";
+                
+                const { data, error } = await supabase
+                    .from('citizens')
+                    .select('*')
+                    .eq('national_id', id13)
+                    .single();
+
+                if (data) {
+                    // พบข้อมูลเดิม -> ทำ Autofill
+                    document.getElementById('full_name').value = data.full_name;
+                    document.getElementById('phone_number').value = data.phone_number;
+                    document.getElementById('house_status').value = data.house_status;
+                    document.getElementById('drive_folder_id').value = data.drive_folder_id || '';
+                    statusText.innerText = "✓ พบข้อมูลเดิม (ระบบจะอัปโหลดเพิ่มเข้าโฟลเดอร์เดิมอัตโนมัติ)";
+                    statusText.className = "text-xs text-green-600 mt-1 font-semibold";
+                } else {
+                    // ไม่พบข้อมูล -> ล้างช่องอื่นเพื่อให้กรอกใหม่
+                    document.getElementById('full_name').value = '';
+                    document.getElementById('phone_number').value = '';
+                    document.getElementById('house_status').selectedIndex = 0;
+                    document.getElementById('drive_folder_id').value = '';
+                    statusText.innerText = "+ ไม่พบข้อมูลเดิม (ระบบจะสร้างข้อมูลและโฟลเดอร์ใหม่ให้)";
+                    statusText.className = "text-xs text-orange-600 mt-1 font-semibold";
+                }
+            } else {
+                statusText.innerText = "";
+            }
+        });
+
+        // จัดการเมื่อกดปุ่มส่งฟอร์ม
+        document.getElementById('docForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "กำลังอัปโหลดข้อมูล...";
+
+            // ส่งข้อมูลไปยัง Backend / Automation ต่อไป (เช่น Make.com Webhook)
+            alert("ฟอร์มพร้อมส่งข้อมูลแล้ว! ขั้นตอนต่อไปเราจะนำข้อมูลนี้ส่งเข้า Make.com เพื่อจัดการ Google Drive และ Supabase ต่อไปครับ");
+            
+            btn.disabled = false;
+            btn.innerText = "ส่งข้อมูล / อัปโหลดเอกสาร";
+        });
+    </script>
+</body>
+</html>
