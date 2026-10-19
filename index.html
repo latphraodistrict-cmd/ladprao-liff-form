@@ -3,71 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ยื่นเอกสาร LINE OA ลาดพร้าว</title>
+    <title>ยื่นเอกสารอุทกภัย ๒๕๖๙ LINE OA สำนักงานเขตลาดพร้าว</title>
     <!-- นำเข้า Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- นำเข้า Google Fonts: Sarabun (ฟอนต์ภาษาไทยแบบมีหัว อ่านง่าย เหมาะกับผู้สูงอายุ) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- นำเข้า LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- นำเข้า Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* กำหนดให้ใช้ฟอนต์ Sarabun ซึ่งเป็นฟอนต์มีหัว อ่านง่าย */
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 font-sans">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md mt-4">
-        <h2 class="text-xl font-bold text-slate-800 mb-4 text-center">ระบบส่งเอกสาร LINE OA ลาดพร้าว</h2>
+<body class="bg-slate-100 min-h-screen p-3 sm:p-6">
+    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
         
-        <form id="docForm" class="space-y-4">
+        <!-- ส่วนหัวของฟอร์ม -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-5 text-white text-center">
+            <h2 class="text-2xl font-bold tracking-wide">ระบบยื่นเอกสารอุทกภัยเพิ่มเติม</h2>
+            <p class="text-blue-100 text-sm mt-1 font-light">LINE Official Account สำนักงานเขตลาดพร้าว</p>
+        </div>
+
+        <form id="docForm" class="p-5 space-y-5">
+            
             <!-- เลขบัตรประชาชน (Key หลัก) -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">เลขบัตรประชาชน 13 หลัก *</label>
+                <label class="block text-base font-semibold text-slate-800 mb-1">
+                    1. เลขบัตรประชาชน (13 หลัก) <span class="text-red-500">*</span>
+                </label>
                 <input type="text" id="national_id" maxlength="13" required 
-                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    placeholder="กรอกเลขบัตรประชาชน 13 หลักเพื่อตรวจสอบข้อมูลเดิม">
-                <p id="searchStatus" class="text-xs text-blue-600 mt-1"></p>
+                    class="w-full p-3 text-lg border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition text-slate-800 placeholder-slate-400"
+                    placeholder="กรอกเลขบัตรประชาชน 13 หลัก">
+                <p id="searchStatus" class="text-sm font-medium mt-1.5"></p>
             </div>
 
             <!-- ชื่อ-นามสกุล -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">ชื่อ-นามสกุล *</label>
+                <label class="block text-base font-semibold text-slate-800 mb-1">
+                    2. ชื่อ - นามสกุล <span class="text-red-500">*</span>
+                </label>
                 <input type="text" id="full_name" required 
-                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    class="w-full p-3 text-base border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition text-slate-800"
+                    placeholder="ระบุชื่อและนามสกุลจริง">
             </div>
 
             <!-- เบอร์โทรศัพท์ -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">เบอร์โทรศัพท์ติดต่อ *</label>
+                <label class="block text-base font-semibold text-slate-800 mb-1">
+                    3. เบอร์โทรศัพท์ติดต่อ <span class="text-red-500">*</span>
+                </label>
                 <input type="tel" id="phone_number" maxlength="10" required 
-                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    class="w-full p-3 text-base border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition text-slate-800"
+                    placeholder="เช่น 0812345678">
             </div>
 
             <!-- สถานะ -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">สถานะ *</label>
+                <label class="block text-base font-semibold text-slate-800 mb-1">
+                    4. สถานะของคุณ <span class="text-red-500">*</span>
+                </label>
                 <select id="house_status" required 
-                    class="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <option value="">-- เลือกสถานะ --</option>
+                    class="w-full p-3 text-base border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white transition text-slate-800">
+                    <option value="">-- กดเพื่อเลือกสถานะ --</option>
                     <option value="เจ้าบ้าน">เจ้าบ้าน</option>
                     <option value="ผู้เช่า">ผู้เช่า</option>
                     <option value="ลูกบ้าน">ลูกบ้าน</option>
                 </select>
             </div>
 
-            <!-- แนบไฟล์ (ปรับปรุงให้รองรับเลือกหลายไฟล์) -->
+            <!-- ปุ่มแนบไฟล์ขนาดใหญ่ สำหรับผู้สูงอายุ -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">แนบเอกสาร (เลือกได้หลายรูปภาพ หรือ PDF พร้อมกัน) *</label>
-                <input type="file" id="document_file" required accept="image/*,.pdf" multiple
-                    class="mt-1 w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <p id="fileCount" class="text-xs text-slate-500 mt-1">ยังไม่ได้เลือกไฟล์</p>
+                <label class="block text-base font-semibold text-slate-800 mb-1">
+                    5. แนบรูปถ่าย หรือ เอกสาร PDF <span class="text-red-500">*</span>
+                </label>
+                
+                <!-- ซ่อน Input เลือกไฟล์แบบเดิมไว้ -->
+                <input type="file" id="document_file" required accept="image/*,.pdf" multiple class="hidden">
+                
+                <!-- สร้างปุ่มกดขนาดใหญ่ที่สวยงามและเข้าใจง่ายแทน -->
+                <button type="button" onclick="document.getElementById('document_file').click()"
+                    class="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-400 rounded-2xl p-5 text-center transition flex flex-col items-center justify-center gap-2 group active:scale-98">
+                    <!-- ไอคอนรูปถ่ายและเอกสาร -->
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition">
+                        📷
+                    </div>
+                    <span class="text-lg font-bold text-blue-900">
+                        กดตรงนี้เพื่อ "เลือกรูปภาพ" หรือ "ไฟล์ PDF"
+                    </span>
+                    <span class="text-sm text-slate-600">
+                        (สามารถเลือกได้หลายๆ รูปพร้อมกัน)
+                    </span>
+                </button>
+
+                <!-- แสดงข้อความจำนวนไฟล์ที่เลือก -->
+                <div id="fileListContainer" class="mt-2 text-center">
+                    <p id="fileCount" class="text-sm text-slate-500 font-medium">ยังไม่ได้เลือกไฟล์เอกสาร</p>
+                </div>
             </div>
 
             <!-- Hidden Fields -->
             <input type="hidden" id="line_user_id">
             <input type="hidden" id="drive_folder_id">
 
-            <!-- ปุ่มส่งข้อมูล -->
-            <button type="submit" id="submitBtn"
-                class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                ส่งข้อมูล / อัปโหลดเอกสารทั้งหมด
-            </button>
+            <!-- ปุ่มกดส่งข้อมูลขนาดใหญ่ -->
+            <div class="pt-2">
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white p-4 rounded-xl font-bold text-xl shadow-lg transition duration-200 transform">
+                    ส่งข้อมูลและอัปโหลดเอกสาร
+                </button>
+            </div>
+
         </form>
     </div>
 
@@ -95,16 +147,15 @@
             }
         };
 
-        // แสดงจำนวนไฟล์ที่เลือก
+        // แสดงจำนวนไฟล์ที่เลือกให้เห็นชัดเจน
         document.getElementById('document_file').addEventListener('change', function(e) {
             const files = e.target.files;
             const fileCountText = document.getElementById('fileCount');
             if (files.length > 0) {
-                fileCountText.innerText = `คุณเลือกทั้งหมด ${files.length} ไฟล์`;
-                fileCountText.className = "text-xs text-blue-600 mt-1 font-semibold";
+                fileCountText.innerHTML = `<span class="bg-green-100 text-green-800 px-3 py-1.5 rounded-lg text-base border border-green-300 inline-block font-bold">✓ คุณเลือกเอกสารแล้วทั้งหมด ${files.length} ไฟล์</span>`;
             } else {
-                fileCountText.innerText = "ยังไม่ได้เลือกไฟล์";
-                fileCountText.className = "text-xs text-slate-500 mt-1";
+                fileCountText.innerText = "ยังไม่ได้เลือกไฟล์เอกสาร";
+                fileCountText.className = "text-sm text-slate-500 font-medium";
             }
         });
 
@@ -114,8 +165,9 @@
             const statusText = document.getElementById('searchStatus');
 
             if (id13.length === 13) {
-                statusText.innerText = "กำลังค้นหาข้อมูลเดิม...";
-                
+                statusText.innerText = "🔍 กำลังตรวจสอบข้อมูลเดิม...";
+                statusText.className = "text-sm font-medium text-blue-600 mt-1.5";
+
                 const { data, error } = await supabase
                     .from('citizens')
                     .select('*')
@@ -128,16 +180,16 @@
                     document.getElementById('phone_number').value = data.phone_number;
                     document.getElementById('house_status').value = data.house_status;
                     document.getElementById('drive_folder_id').value = data.drive_folder_id || '';
-                    statusText.innerText = "✓ พบข้อมูลเดิม (ระบบจะอัปโหลดเพิ่มเข้าโฟลเดอร์เดิมอัตโนมัติ)";
-                    statusText.className = "text-xs text-green-600 mt-1 font-semibold";
+                    statusText.innerText = "✓ พบข้อมูลเดิมของท่านเรียบร้อยแล้ว (เอกสารใหม่จะถูกเพิ่มเข้าโฟลเดอร์เดิม)";
+                    statusText.className = "text-sm text-emerald-700 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1.5 font-semibold";
                 } else {
-                    // ไม่พบข้อมูล -> ล้างช่องอื่นเพื่อให้กรอกใหม่
+                    // ไม่พบข้อมูล
                     document.getElementById('full_name').value = '';
                     document.getElementById('phone_number').value = '';
                     document.getElementById('house_status').selectedIndex = 0;
                     document.getElementById('drive_folder_id').value = '';
-                    statusText.innerText = "+ ไม่พบข้อมูลเดิม (ระบบจะสร้างข้อมูลและโฟลเดอร์ใหม่ให้)";
-                    statusText.className = "text-xs text-orange-600 mt-1 font-semibold";
+                    statusText.innerText = "+ ไม่พบข้อมูลเดิม (ระบบจะสร้างโฟลเดอร์ข้อมูลใหม่ให้ท่าน)";
+                    statusText.className = "text-sm text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-1.5 font-semibold";
                 }
             } else {
                 statusText.innerText = "";
@@ -152,18 +204,19 @@
             const files = fileInput.files;
 
             if (files.length === 0) {
-                alert("กรุณาเลือกอย่างน้อย 1 ไฟล์");
+                alert("กรุณากดเลือกไฟล์รูปภาพหรือ PDF อย่างน้อย 1 ไฟล์ครับ");
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = `กำลังอัปโหลดทั้ง ${files.length} ไฟล์...`;
+            btn.innerText = `⏳ กำลังอัปโหลดทั้ง ${files.length} ไฟล์...`;
+            btn.className = "w-full bg-slate-400 text-white p-4 rounded-xl font-bold text-xl cursor-not-allowed";
 
-            // ส่งข้อมูลไปยัง Backend / Automation ต่อไป (เช่น Make.com Webhook)
-            alert(`เลือกทั้งหมด ${files.length} ไฟล์เรียบร้อย! ระบบจะประมวลผลอัปโหลดเข้า Google Drive ทีละไฟล์โดยอัตโนมัติ`);
+            alert(`เลือกทั้งหมด ${files.length} ไฟล์เรียบร้อย! ระบบจะส่งข้อมูลอัปโหลดเข้า Google Drive ต่อไปครับ`);
             
             btn.disabled = false;
-            btn.innerText = "ส่งข้อมูล / อัปโหลดเอกสารทั้งหมด";
+            btn.innerText = "ส่งข้อมูลและอัปโหลดเอกสาร";
+            btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold text-xl shadow-lg transition duration-200";
         });
     </script>
 </body>
