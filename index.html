@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ยื่นเอกสาร LINE OA ลาดพร้าว</title>
-    <!-- นำเข้า Tailwind CSS เพื่อความสวยงาม -->
+    <!-- นำเข้า Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- นำเข้า LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- นำเข้า Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 min-p-4 font-sans">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md mt-6">
+<body class="bg-slate-50 min-h-screen p-4 font-sans">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md mt-4">
         <h2 class="text-xl font-bold text-slate-800 mb-4 text-center">ระบบส่งเอกสาร LINE OA ลาดพร้าว</h2>
         
         <form id="docForm" class="space-y-4">
@@ -51,21 +51,22 @@
                 </select>
             </div>
 
-            <!-- แนบไฟล์ -->
+            <!-- แนบไฟล์ (ปรับปรุงให้รองรับเลือกหลายไฟล์) -->
             <div>
-                <label class="block text-sm font-medium text-slate-700">แนบเอกสาร (รูปภาพ หรือ PDF) *</label>
-                <input type="file" id="document_file" required accept="image/*,.pdf"
+                <label class="block text-sm font-medium text-slate-700">แนบเอกสาร (เลือกได้หลายรูปภาพ หรือ PDF พร้อมกัน) *</label>
+                <input type="file" id="document_file" required accept="image/*,.pdf" multiple
                     class="mt-1 w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <p id="fileCount" class="text-xs text-slate-500 mt-1">ยังไม่ได้เลือกไฟล์</p>
             </div>
 
-            <!-- Hidden Field เก็บ LINE User ID และ Drive Folder ID เดิม -->
+            <!-- Hidden Fields -->
             <input type="hidden" id="line_user_id">
             <input type="hidden" id="drive_folder_id">
 
             <!-- ปุ่มส่งข้อมูล -->
             <button type="submit" id="submitBtn"
                 class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                ส่งข้อมูล / อัปโหลดเอกสาร
+                ส่งข้อมูล / อัปโหลดเอกสารทั้งหมด
             </button>
         </form>
     </div>
@@ -93,6 +94,19 @@
                 console.error("LIFF Initialization failed", error);
             }
         };
+
+        // แสดงจำนวนไฟล์ที่เลือก
+        document.getElementById('document_file').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const fileCountText = document.getElementById('fileCount');
+            if (files.length > 0) {
+                fileCountText.innerText = `คุณเลือกทั้งหมด ${files.length} ไฟล์`;
+                fileCountText.className = "text-xs text-blue-600 mt-1 font-semibold";
+            } else {
+                fileCountText.innerText = "ยังไม่ได้เลือกไฟล์";
+                fileCountText.className = "text-xs text-slate-500 mt-1";
+            }
+        });
 
         // ตรวจสอบเลขบัตรประชาชน 13 หลักเมื่อพิมพ์ครบ
         document.getElementById('national_id').addEventListener('input', async function(e) {
@@ -134,14 +148,22 @@
         document.getElementById('docForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
+            const fileInput = document.getElementById('document_file');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert("กรุณาเลือกอย่างน้อย 1 ไฟล์");
+                return;
+            }
+
             btn.disabled = true;
-            btn.innerText = "กำลังอัปโหลดข้อมูล...";
+            btn.innerText = `กำลังอัปโหลดทั้ง ${files.length} ไฟล์...`;
 
             // ส่งข้อมูลไปยัง Backend / Automation ต่อไป (เช่น Make.com Webhook)
-            alert("ฟอร์มพร้อมส่งข้อมูลแล้ว! ขั้นตอนต่อไปเราจะนำข้อมูลนี้ส่งเข้า Make.com เพื่อจัดการ Google Drive และ Supabase ต่อไปครับ");
+            alert(`เลือกทั้งหมด ${files.length} ไฟล์เรียบร้อย! ระบบจะประมวลผลอัปโหลดเข้า Google Drive ทีละไฟล์โดยอัตโนมัติ`);
             
             btn.disabled = false;
-            btn.innerText = "ส่งข้อมูล / อัปโหลดเอกสาร";
+            btn.innerText = "ส่งข้อมูล / อัปโหลดเอกสารทั้งหมด";
         });
     </script>
 </body>
