@@ -238,7 +238,7 @@
                     .from('citizens')
                     .select('*')
                     .eq('national_id', id13)
-                    .single();
+                    .maybeSingle();
 
                 if (data) {
                     document.getElementById('full_name').value = data.full_name;
@@ -350,7 +350,7 @@
 
                 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
 
-                if (GAS_WEB_APP_URL.includes('วาง_WEB_APP_URL')) {
+                if (GAS_WEB_APP_URL.includes('https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec')) {
                     console.log("Payload:", payload);
                     progressBar.style.width = '100%';
                     progressPercent.innerText = '100%';
