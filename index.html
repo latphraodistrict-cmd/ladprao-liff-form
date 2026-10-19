@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ยื่นเอกสารอุทกภัย ๒๕๖๙ LINE OA สำนักงานเขตลาดพร้าว</title>
+    <title>ยื่นข้อมูลและเอกสารอุทกภัย ๒๕๖๙ LINE OA สำนักงานเขตลาดพร้าว</title>
     <!-- นำเข้า Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- นำเข้า Google Fonts: Sarabun (ฟอนต์ภาษาไทยแบบมีหัว อ่านง่าย) -->
+    <!-- นำเข้า Google Fonts: Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -22,12 +22,12 @@
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-3 sm:p-6">
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-10">
         
         <!-- ส่วนหัวของฟอร์ม -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-5 text-white text-center">
-            <h2 class="text-2xl font-bold tracking-wide">ระบบยื่นเอกสารอุทกภัยเพิ่มเติม</h2>
-            <p class="text-blue-100 text-sm mt-1 font-light">LINE Official Account สำนักงานเขตลาดพร้าว</p>
+            <h2 class="text-2xl font-bold tracking-wide">ระบบยื่นเอกสารผู้ประสบอุทกภัย</h2>
+            <p class="text-blue-100 text-sm mt-1 font-light">สำนักงานเขตลาดพร้าว</p>
         </div>
 
         <form id="docForm" class="p-5 space-y-5">
@@ -39,7 +39,7 @@
                 </label>
                 <input type="text" id="national_id" maxlength="13" required 
                     class="w-full p-3 text-lg border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition text-slate-800 placeholder-slate-400"
-                    placeholder="กรอกเลขบัตรประชาชน 13 หลัก">
+                    placeholder="กรอกเลขบัตรประชาชนเพื่อตรวจสอบข้อมูล">
                 <p id="searchStatus" class="text-sm font-medium mt-1.5"></p>
             </div>
 
@@ -77,149 +77,164 @@
                 </select>
             </div>
 
-            <!-- แนบไฟล์เอกสาร -->
+            <!-- แนบไฟล์เอกสาร (บังคับส่ง) -->
             <div>
                 <label class="block text-base font-semibold text-slate-800 mb-1">
-                    5. แนบรูปถ่าย หรือ เอกสาร PDF <span class="text-red-500">*</span>
+                    5. แนบเอกสาร (รูปภาพ หรือ PDF) <span class="text-red-500">*</span>
                 </label>
                 
-                <input type="file" id="document_file" accept="image/*,.pdf" multiple class="hidden">
+                <input type="file" id="document_file" accept="image/*,.pdf" multiple class="hidden" onchange="handleFileSelect(event)">
                 
                 <button type="button" onclick="document.getElementById('document_file').click()"
-                    class="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-400 rounded-2xl p-5 text-center transition flex flex-col items-center justify-center gap-2 group active:scale-98">
-                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition">
-                        📷
-                    </div>
-                    <span class="text-lg font-bold text-blue-900">
-                        กดตรงนี้เพื่อ "เลือกรูปภาพ" หรือ "ไฟล์ PDF"
-                    </span>
-                    <span class="text-sm text-slate-600">
-                        (สามารถเลือกได้หลายๆ รูปพร้อมกัน)
-                    </span>
+                    class="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-400 rounded-2xl p-4 text-center transition flex flex-col items-center justify-center gap-1">
+                    <span class="text-xl">📁</span>
+                    <span class="text-base font-bold text-blue-900">กดเพื่อเลือกรูปภาพ หรือ PDF</span>
+                    <span class="text-xs text-slate-500">(เลือกได้หลายไฟล์พร้อมกัน - บังคับแนบเอกสาร)</span>
                 </button>
 
-                <!-- สรุปจำนวนไฟล์ที่เลือก -->
-                <div class="mt-3 text-center">
-                    <p id="fileCount" class="text-sm text-slate-500 font-medium">ยังไม่ได้เลือกไฟล์เอกสาร</p>
-                </div>
+                <p id="fileStatusText" class="text-sm text-red-600 mt-2 text-center font-medium">⚠️ ยังไม่ได้เลือกไฟล์เอกสาร (โปรดแนบอย่างน้อย 1 ไฟล์)</p>
 
-                <!-- แสดงรายการ/ตารางไฟล์ที่เลือกพร้อมปุ่มดูตัวอย่าง -->
-                <div id="fileListPreview" class="mt-3 space-y-2 hidden">
-                    <p class="text-sm font-semibold text-slate-700">รายการเอกสารที่เตรียมส่ง:</p>
-                    <div id="fileItemsContainer" class="space-y-2">
-                        <!-- รายการไฟล์จะถูกเติมเข้ามาด้วย JavaScript -->
-                    </div>
+                <!-- ตารางแสดงรายการไฟล์พร้อมตัวอย่างรูปภาพหรือ PDF -->
+                <div id="fileTableContainer" class="mt-3 space-y-2 hidden">
+                    <p class="text-sm font-semibold text-slate-700">รายการไฟล์ที่เลือก:</p>
+                    <div id="fileTableList" class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white shadow-sm"></div>
+                </div>
+            </div>
+
+            <!-- แถบแสดงความก้าวหน้าการอัปโหลด (Progress Bar) -->
+            <div id="progressContainer" class="hidden space-y-2 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div class="flex justify-between text-sm font-bold text-blue-900">
+                    <span id="progressText">กำลังอัปโหลดเอกสาร...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-4 overflow-hidden shadow-inner">
+                    <div id="progressBar" class="bg-blue-600 h-4 rounded-full transition-all duration-300 w-0"></div>
                 </div>
             </div>
 
             <!-- Hidden Fields -->
-            <input type="hidden" id="line_user_id">
+            <input type="hidden" id="line_user_id" value="TEST_USER_PC_BROWSER">
             <input type="hidden" id="drive_folder_id">
 
-            <!-- ปุ่มกดส่งข้อมูล -->
-            <div class="pt-2">
+            <!-- ปุ่มส่งเอกสาร -->
+            <div class="pt-3">
                 <button type="submit" id="submitBtn"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white p-4 rounded-xl font-bold text-xl shadow-lg transition duration-200 transform">
-                    ส่งข้อมูลและอัปโหลดเอกสาร
+                    ส่งเอกสาร
                 </button>
             </div>
 
         </form>
     </div>
 
+    <!-- Popup Modal แจ้งเตือนสถานะ -->
+    <div id="successModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl transform transition-all scale-100">
+            <div id="modalIcon" class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                ⏳
+            </div>
+            <h3 id="modalTitle" class="text-2xl font-bold text-slate-800 mb-2">กำลังอัปโหลดเอกสาร</h3>
+            <p id="modalDesc" class="text-slate-600 text-base mb-6 leading-relaxed">
+                กรุณารอสักครู่ ระบบกำลังนำส่งไฟล์และข้อมูลของท่านเข้าสู่ระบบ...
+            </p>
+            <button id="modalBtn" onclick="closeModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg shadow-md transition hidden">
+                ตกลง / ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://wvbhjagexbjpyuipbpnx.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_OPzVGkJk8VeN2-xlzIdaog_FT1rJIQq';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentLineId = '';
-        let selectedFilesArray = []; // ตัวแปรเก็บไฟล์ทั้งหมดที่เลือกไว้
+        let selectedFilesArray = [];
 
-        window.onload = async function() {
-            try {
-                await liff.init({ liffId: "2012104123-sCwmwCsF" });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    currentLineId = profile.userId;
-                    document.getElementById('line_user_id').value = currentLineId;
-                } else {
-                    liff.login();
-                }
-            } catch (error) {
-                console.error("LIFF Initialization failed", error);
-            }
-        };
-
-        // จัดการเมื่อมีการเลือกไฟล์เพิ่ม
-        document.getElementById('document_file').addEventListener('change', function(e) {
+        function handleFileSelect(e) {
             const newFiles = Array.from(e.target.files);
-            selectedFilesArray = selectedFilesArray.concat(newFiles); // รวมไฟล์ใหม่เข้ากับไฟล์เดิม
+            selectedFilesArray = selectedFilesArray.concat(newFiles);
             renderFileList();
-            e.target.value = ''; // ล้างค่า input เพื่อให้เลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
-        });
+            e.target.value = '';
 
-        // ฟังก์ชันวาดรายการไฟล์พร้อมปุ่มดูตัวอย่าง
+            // เลื่อนหน้าจอลงมาที่ตารางไฟล์ทันทีอัตโนมัติ
+            setTimeout(() => {
+                document.getElementById('fileTableContainer').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
         function renderFileList() {
-            const fileCountText = document.getElementById('fileCount');
-            const fileListPreview = document.getElementById('fileListPreview');
-            const container = document.getElementById('fileItemsContainer');
-
-            container.innerHTML = '';
+            const fileCountText = document.getElementById('fileStatusText');
+            const fileTableContainer = document.getElementById('fileTableContainer');
+            const fileTableList = document.getElementById('fileTableList');
+            
+            fileTableList.innerHTML = '';
 
             if (selectedFilesArray.length > 0) {
-                fileCountText.innerHTML = `<span class="bg-green-100 text-green-800 px-3 py-1.5 rounded-lg text-base border border-green-300 inline-block font-bold">✓ คุณเลือกเอกสารแล้วทั้งหมด ${selectedFilesArray.length} ไฟล์</span>`;
-                fileListPreview.classList.remove('hidden');
+                fileCountText.innerHTML = `<span class="text-green-700 font-bold">✓ เลือกแล้ว ${selectedFilesArray.length} ไฟล์ พร้อมส่ง</span>`;
+                fileTableContainer.classList.remove('hidden');
 
                 selectedFilesArray.forEach((file, index) => {
-                    const fileUrl = URL.createObjectURL(file);
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = "flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl";
-
                     const isImage = file.type.startsWith('image/');
-                    const icon = isImage ? '🖼️' : '📄';
+                    const fileUrl = URL.createObjectURL(file);
+                    
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between p-2.5 text-sm";
 
-                    itemDiv.innerHTML = `
-                        <div class="flex items-center gap-2 overflow-hidden mr-2">
-                            <span class="text-xl">${icon}</span>
+                    let previewHtml = isImage ? 
+                        `<img src="${fileUrl}" class="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0 mr-3 shadow-sm">` :
+                        `<div class="w-12 h-12 bg-red-50 text-red-600 rounded-lg border border-red-200 flex items-center justify-center font-bold text-xs shrink-0 mr-3 shadow-sm">PDF</div>`;
+
+                    row.innerHTML = `
+                        <div class="flex items-center overflow-hidden mr-2">
+                            ${previewHtml}
                             <div class="truncate">
-                                <p class="text-sm font-semibold text-slate-800 truncate">${file.name}</p>
+                                <p class="font-semibold text-slate-800 truncate">${file.name}</p>
                                 <p class="text-xs text-slate-500">${(file.size / 1024).toFixed(1)} KB</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <a href="${fileUrl}" target="_blank" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition">
-                                👁️ ดูตัวอย่าง
-                            </a>
-                            <button type="button" onclick="removeFile(${index})" class="bg-red-100 hover:bg-red-200 text-red-600 p-1.5 rounded-lg text-xs font-bold transition">
-                                ✕
-                            </button>
-                        </div>
+                        <button type="button" onclick="removeFile(${index})" class="bg-red-50 hover:bg-red-100 text-red-600 px-2.5 py-1.5 rounded-lg text-xs font-bold shrink-0 transition">
+                            ลบ
+                        </button>
                     `;
-                    container.appendChild(itemDiv);
+                    fileTableList.appendChild(row);
                 });
             } else {
-                fileCountText.innerText = "ยังไม่ได้เลือกไฟล์เอกสาร";
-                fileCountText.className = "text-sm text-slate-500 font-medium";
-                fileListPreview.classList.add('hidden');
+                fileCountText.innerHTML = `<span class="text-red-600">⚠️ ยังไม่ได้เลือกไฟล์เอกสาร (โปรดแนบอย่างน้อย 1 ไฟล์)</span>`;
+                fileTableContainer.classList.add('hidden');
             }
         }
 
-        // ฟังก์ชันลบไฟล์ออกจากรายการ
         function removeFile(index) {
             selectedFilesArray.splice(index, 1);
             renderFileList();
         }
 
-        // ตรวจสอบเลขบัตรประชาชน 13 หลัก (Autofill)
+        window.onload = async function() {
+            try {
+                if (typeof liff !== 'undefined') {
+                    await liff.init({ liffId: "2012104123-sCwmwCsF" });
+                    if (liff.isLoggedIn()) {
+                        const profile = await liff.getProfile();
+                        document.getElementById('line_user_id').value = profile.userId;
+                    } else if (liff.isInClient()) {
+                        liff.login();
+                    }
+                }
+            } catch (error) {
+                console.log("รันบนเบราว์เซอร์ทั่วไป ข้ามการล็อกอิน LINE");
+            }
+        };
+
+        // ค้นหาเลขบัตรประชาชน 13 หลัก (ปรับข้อความตามเงื่อนไขใหม่)
         document.getElementById('national_id').addEventListener('input', async function(e) {
             const id13 = e.target.value.trim();
             const statusText = document.getElementById('searchStatus');
 
             if (id13.length === 13) {
-                statusText.innerText = "🔍 กำลังตรวจสอบข้อมูลเดิม...";
+                statusText.innerText = "🔍 กำลังตรวจสอบข้อมูลในระบบ...";
                 statusText.className = "text-sm font-medium text-blue-600 mt-1.5";
 
-                const { data, error } = await supabase
+                const { data, error } = await db
                     .from('citizens')
                     .select('*')
                     .eq('national_id', id13)
@@ -230,34 +245,79 @@
                     document.getElementById('phone_number').value = data.phone_number;
                     document.getElementById('house_status').value = data.house_status;
                     document.getElementById('drive_folder_id').value = data.drive_folder_id || '';
-                    statusText.innerText = "✓ พบข้อมูลเดิมของท่านเรียบร้อยแล้ว (เอกสารใหม่จะถูกเพิ่มเข้าโฟลเดอร์เดิม)";
+                    statusText.innerText = "✓ โปรดส่งเอกสารเพิ่มเติมตามที่เจ้าหน้าที่ทักถวง";
                     statusText.className = "text-sm text-emerald-700 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1.5 font-semibold";
                 } else {
                     document.getElementById('full_name').value = '';
                     document.getElementById('phone_number').value = '';
                     document.getElementById('house_status').selectedIndex = 0;
                     document.getElementById('drive_folder_id').value = '';
-                    statusText.innerText = "+ ไม่พบข้อมูลเดิม (ระบบจะสร้างโฟลเดอร์ข้อมูลใหม่ให้ท่าน)";
-                    statusText.className = "text-sm text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-1.5 font-semibold";
+                    statusText.innerText = ""; // ไม่แสดงข้อความเมื่อเป็นผู้ใช้ใหม่ (สร้างใหม่ปกติ)
+                    statusText.className = "";
                 }
             } else {
                 statusText.innerText = "";
             }
         });
 
-        // จัดการเมื่อกดปุ่มส่งฟอร์ม
+        function showLoadingModal() {
+            const modal = document.getElementById('successModal');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const desc = document.getElementById('modalDesc');
+            const btn = document.getElementById('modalBtn');
+
+            icon.className = "w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner animate-spin";
+            icon.innerText = "⏳";
+            title.innerText = "กำลังอัปโหลดเอกสาร";
+            desc.innerText = "กรุณารอสักครู่ ระบบกำลังนำส่งไฟล์และข้อมูลของท่านเข้าสู่ระบบ...";
+            btn.classList.add('hidden');
+            modal.classList.remove('hidden');
+        }
+
+        function showSuccessModal() {
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const desc = document.getElementById('modalDesc');
+            const btn = document.getElementById('modalBtn');
+
+            icon.className = "w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner";
+            icon.innerText = "✓";
+            title.innerText = "อัปโหลดเอกสารสำเร็จ";
+            desc.innerText = "ระบบได้บันทึกข้อมูลและอัปโหลดเอกสารของท่านเรียบร้อยแล้ว เจ้าหน้าที่ได้ส่งข้อความยืนยันไปที่ LINE ของท่านแล้วครับ";
+            btn.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                liff.closeWindow();
+            }
+        }
+
+        // ส่งฟอร์มและตรวจสอบการบังคับแนบไฟล์
         document.getElementById('docForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
 
             if (selectedFilesArray.length === 0) {
-                alert("กรุณากดเลือกไฟล์รูปภาพหรือ PDF อย่างน้อย 1 ไฟล์ครับ");
+                alert("⚠️ กรุณาแนบเอกสาร (รูปภาพหรือ PDF) อย่างน้อย 1 ไฟล์ก่อนส่งเอกสารครับ");
+                document.getElementById('document_file').focus();
                 return;
             }
 
+            const btn = document.getElementById('submitBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressText = document.getElementById('progressText');
+
             btn.disabled = true;
-            btn.innerText = `⏳ กำลังอัปโหลดทั้ง ${selectedFilesArray.length} ไฟล์...`;
-            btn.className = "w-full bg-slate-400 text-white p-4 rounded-xl font-bold text-xl cursor-not-allowed";
+            btn.innerText = "⏳ กำลังส่งเอกสาร...";
+            progressContainer.classList.remove('hidden');
+            progressBar.style.width = '10%';
+            progressPercent.innerText = '10%';
+
+            showLoadingModal(); // แสดง Popup กำลังอัปโหลดเอกสาร
 
             const fileToBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -271,6 +331,10 @@
             });
 
             try {
+                progressText.innerText = "กำลังแปลงไฟล์เอกสาร...";
+                progressBar.style.width = '40%';
+                progressPercent.innerText = '40%';
+
                 const filePromises = selectedFilesArray.map(file => fileToBase64(file));
                 const encodedFiles = await Promise.all(filePromises);
 
@@ -286,29 +350,68 @@
 
                 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaueeD0CojOZSd55pOkw6wVuzXTYPb6Qf_4D4TDhuhc4fAlG8om3of6DZud0l37HaWjg/exec';
 
-                const response = await fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    contentType: 'application/json',
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    alert("✓ ส่งข้อมูลและอัปโหลดเอกสารทั้งหมดสำเร็จเรียบร้อยแล้ว!");
-                    if (typeof liff !== 'undefined' && liff.isInClient()) {
-                        liff.closeWindow();
-                    }
+                if (GAS_WEB_APP_URL.includes('วาง_WEB_APP_URL')) {
+                    console.log("Payload:", payload);
+                    progressBar.style.width = '100%';
+                    progressPercent.innerText = '100%';
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                        showSuccessModal(); // เปลี่ยน Popup เป็นอัปโหลดเอกสารสำเร็จ
+                        btn.disabled = false;
+                        btn.innerText = "ส่งเอกสาร";
+                    }, 800);
                 } else {
-                    alert("เกิดข้อผิดพลาด: " + result.message);
+                    progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
+                    progressBar.style.width = '70%';
+                    progressPercent.innerText = '70%';
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', GAS_WEB_APP_URL, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+
+                    xhr.upload.onprogress = function(event) {
+                        if (event.lengthComputable) {
+                            const percent = Math.round((event.loaded / event.total) * 30) + 70;
+                            progressBar.style.width = percent + '%';
+                            progressPercent.innerText = percent + '%';
+                        }
+                    };
+
+                    xhr.onload = function() {
+                        progressContainer.classList.add('hidden');
+                        if (xhr.status === 200) {
+                            const result = JSON.parse(xhr.responseText);
+                            if (result.status === "success") {
+                                showSuccessModal(); // เปลี่ยน Popup เป็นอัปโหลดเอกสารสำเร็จ
+                            } else {
+                                alert("เกิดข้อผิดพลาด: " + result.message);
+                                closeModal();
+                            }
+                        } else {
+                            alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                            closeModal();
+                        }
+                        btn.disabled = false;
+                        btn.innerText = "ส่งเอกสาร";
+                    };
+
+                    xhr.onerror = function() {
+                        progressContainer.classList.add('hidden');
+                        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                        closeModal();
+                        btn.disabled = false;
+                        btn.innerText = "ส่งเอกสาร";
+                    };
+
+                    xhr.send(JSON.stringify(payload));
                 }
             } catch (err) {
                 console.error(err);
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อระบบ กรุณาลองใหม่อีกครั้ง");
-            } finally {
+                progressContainer.classList.add('hidden');
+                alert("เกิดข้อผิดพลาดในการเตรียมไฟล์ กรุณาลองใหม่อีกครั้ง");
+                closeModal();
                 btn.disabled = false;
-                btn.innerText = "ส่งข้อมูลและอัปโหลดเอกสาร";
-                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold text-xl shadow-lg transition duration-200";
+                btn.innerText = "ส่งเอกสาร";
             }
         });
     </script>
