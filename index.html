@@ -357,7 +357,9 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', GAS_WEB_APP_URL, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                // เปลี่ยนเป็น text/plain เพื่อป้องกันไม่ให้เบราว์เซอร์ส่ง Preflight OPTIONS ซึ่งทำให้ติด CORS
+                xhr.setRequestHeader('Content-Type', 'text/plain');
 
                 xhr.upload.onprogress = function(event) {
                     if (event.lengthComputable) {
@@ -373,7 +375,7 @@
                         try {
                             const result = JSON.parse(xhr.responseText);
                             if (result.status === "success") {
-                                showSuccessModal(); // เปลี่ยน Popup เป็นอัปโหลดเอกสารสำเร็จ
+                                showSuccessModal(); // แสดง Popup อัปโหลดสำเร็จ
                             } else {
                                 alert("เกิดข้อผิดพลาด: " + result.message);
                                 closeModal();
@@ -399,7 +401,6 @@
                 };
 
                 xhr.send(JSON.stringify(payload));
-
             } catch (err) {
                 console.error(err);
                 progressContainer.classList.add('hidden');
