@@ -296,120 +296,88 @@
         }
 
         // ส่งฟอร์มและตรวจสอบการบังคับแนบไฟล์
-        document.getElementById('docForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+document.getElementById('docForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-            if (selectedFilesArray.length === 0) {
-                alert("⚠️ กรุณาแนบเอกสาร (รูปภาพหรือ PDF) อย่างน้อย 1 ไฟล์ก่อนส่งเอกสารครับ");
-                document.getElementById('document_file').focus();
-                return;
-            }
+    if (selectedFilesArray.length === 0) {
+        alert("⚠️ กรุณาแนบเอกสาร (รูปภาพหรือ PDF) อย่างน้อย 1 ไฟล์ก่อนส่งเอกสารครับ");
+        document.getElementById('document_file').focus();
+        return;
+    }
 
-            const btn = document.getElementById('submitBtn');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressPercent = document.getElementById('progressPercent');
-            const progressText = document.getElementById('progressText');
+    const btn = document.getElementById('submitBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressText = document.getElementById('progressText');
 
-            btn.disabled = true;
-            btn.innerText = "⏳ กำลังส่งเอกสาร...";
-            progressContainer.classList.remove('hidden');
-            progressBar.style.width = '10%';
-            progressPercent.innerText = '10%';
+    btn.disabled = true;
+    btn.innerText = "⏳ กำลังส่งเอกสาร...";
+    progressContainer.classList.remove('hidden');
+    progressBar.style.width = '30%';
+    progressPercent.innerText = '30%';
 
-            showLoadingModal(); // แสดง Popup กำลังอัปโหลดเอกสาร
+    showLoadingModal(); // แสดง Popup กำลังอัปโหลดเอกสาร
 
-            const fileToBase64 = file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve({
-                    name: file.name,
-                    type: file.type,
-                    base64: reader.result.split(',')[1]
-                });
-                reader.onerror = error => reject(error);
-            });
-
-            try {
-                progressText.innerText = "กำลังแปลงไฟล์เอกสาร...";
-                progressBar.style.width = '40%';
-                progressPercent.innerText = '40%';
-
-                const filePromises = selectedFilesArray.map(file => fileToBase64(file));
-                const encodedFiles = await Promise.all(filePromises);
-
-                const payload = {
-                    national_id: document.getElementById('national_id').value.trim(),
-                    full_name: document.getElementById('full_name').value.trim(),
-                    phone_number: document.getElementById('phone_number').value.trim(),
-                    house_status: document.getElementById('house_status').value,
-                    line_user_id: document.getElementById('line_user_id').value,
-                    drive_folder_id: document.getElementById('drive_folder_id').value,
-                    files: encodedFiles
-                };
-
-                const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
-
-                // ส่งข้อมูลจริงไปยัง Google Apps Script
-                progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
-                progressBar.style.width = '70%';
-                progressPercent.innerText = '70%';
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', GAS_WEB_APP_URL, true);
-                
-                // เปลี่ยนเป็น text/plain เพื่อป้องกันไม่ให้เบราว์เซอร์ส่ง Preflight OPTIONS ซึ่งทำให้ติด CORS
-                xhr.setRequestHeader('Content-Type', 'text/plain');
-
-                xhr.upload.onprogress = function(event) {
-                    if (event.lengthComputable) {
-                        const percent = Math.round((event.loaded / event.total) * 30) + 70;
-                        progressBar.style.width = percent + '%';
-                        progressPercent.innerText = percent + '%';
-                    }
-                };
-
-                xhr.onload = function() {
-                    progressContainer.classList.add('hidden');
-                    if (xhr.status === 200) {
-                        try {
-                            const result = JSON.parse(xhr.responseText);
-                            if (result.status === "success") {
-                                showSuccessModal(); // แสดง Popup อัปโหลดสำเร็จ
-                            } else {
-                                alert("เกิดข้อผิดพลาด: " + result.message);
-                                closeModal();
-                            }
-                        } catch (parseErr) {
-                            alert("เกิดข้อผิดพลาดในการประมวลผลข้อมูลตอบกลับ");
-                            closeModal();
-                        }
-                    } else {
-                        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ (Status: " + xhr.status + ")");
-                        closeModal();
-                    }
-                    btn.disabled = false;
-                    btn.innerText = "ส่งเอกสาร";
-                };
-
-                xhr.onerror = function() {
-                    progressContainer.classList.add('hidden');
-                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
-                    closeModal();
-                    btn.disabled = false;
-                    btn.innerText = "ส่งเอกสาร";
-                };
-
-                xhr.send(JSON.stringify(payload));
-            } catch (err) {
-                console.error(err);
-                progressContainer.classList.add('hidden');
-                alert("เกิดข้อผิดพลาดในการเตรียมไฟล์ กรุณาลองใหม่อีกครั้ง");
-                closeModal();
-                btn.disabled = false;
-                btn.innerText = "ส่งเอกสาร";
-            }
+    const fileToBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve({
+            name: file.name,
+            type: file.type,
+            base64: reader.result.split(',')[1]
         });
+        reader.onerror = error => reject(error);
+    });
+
+    try {
+        progressText.innerText = "กำลังเตรียมไฟล์เอกสาร...";
+        progressBar.style.width = '60%';
+        progressPercent.innerText = '60%';
+
+        const filePromises = selectedFilesArray.map(file => fileToBase64(file));
+        const encodedFiles = await Promise.all(filePromises);
+
+        const payload = {
+            national_id: document.getElementById('national_id').value.trim(),
+            full_name: document.getElementById('full_name').value.trim(),
+            phone_number: document.getElementById('phone_number').value.trim(),
+            house_status: document.getElementById('house_status').value,
+            line_user_id: document.getElementById('line_user_id').value,
+            drive_folder_id: document.getElementById('drive_folder_id').value,
+            files: encodedFiles
+        };
+
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
+
+        progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
+        progressBar.style.width = '90%';
+        progressPercent.innerText = '90%';
+
+        // ใช้ fetch พร้อม mode: 'no-cors' เพื่อป้องกัน CORS Block จาก Google Apps Script
+        await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        progressContainer.classList.add('hidden');
+        showSuccessModal(); // แสดง Popup อัปโหลดเอกสารสำเร็จ
+        btn.disabled = false;
+        btn.innerText = "ส่งเอกสาร";
+
+    } catch (err) {
+        console.error(err);
+        progressContainer.classList.add('hidden');
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง");
+        closeModal();
+        btn.disabled = false;
+        btn.innerText = "ส่งเอกสาร";
+    }
+});
     </script>
 </body>
 </html>
