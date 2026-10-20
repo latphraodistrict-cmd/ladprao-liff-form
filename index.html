@@ -63,7 +63,7 @@
                     placeholder="เช่น 0812345678">
             </div>
 
-            <!-- สถานะ -->
+            <!-- สถานะ (ปรับปรุงตัวเลือกเป็น เจ้าบ้าน, ผู้อยู่อาศัย, ผู้เช่า) -->
             <div>
                 <label class="block text-base font-semibold text-slate-800 mb-1">
                     4. สถานะของคุณ <span class="text-red-500">*</span>
@@ -72,8 +72,8 @@
                     class="w-full p-3 text-base border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white transition text-slate-800">
                     <option value="">-- กดเพื่อเลือกสถานะ --</option>
                     <option value="เจ้าบ้าน">เจ้าบ้าน</option>
+                    <option value="ผู้อยู่อาศัย">ผู้อยู่อาศัย</option>
                     <option value="ผู้เช่า">ผู้เช่า</option>
-                    <option value="ลูกบ้าน">ลูกบ้าน</option>
                 </select>
             </div>
 
@@ -225,7 +225,7 @@
             }
         };
 
-        // ค้นหาเลขบัตรประชาชน 13 หลัก (ปรับข้อความตามเงื่อนไขใหม่)
+        // ค้นหาเลขบัตรประชาชน 13 หลัก
         document.getElementById('national_id').addEventListener('input', async function(e) {
             const id13 = e.target.value.trim();
             const statusText = document.getElementById('searchStatus');
@@ -245,14 +245,14 @@
                     document.getElementById('phone_number').value = data.phone_number;
                     document.getElementById('house_status').value = data.house_status;
                     document.getElementById('drive_folder_id').value = data.drive_folder_id || '';
-                    statusText.innerText = "✓ โปรดส่งเอกสารเพิ่มเติมตามที่เจ้าหน้าที่ทักถวง";
+                    statusText.innerText = "✓ โปรดส่งเอกสารเพิ่มเติมตามที่เจ้าหน้าที่ทักท้วง";
                     statusText.className = "text-sm text-emerald-700 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1.5 font-semibold";
                 } else {
                     document.getElementById('full_name').value = '';
                     document.getElementById('phone_number').value = '';
                     document.getElementById('house_status').selectedIndex = 0;
                     document.getElementById('drive_folder_id').value = '';
-                    statusText.innerText = ""; // ไม่แสดงข้อความเมื่อเป็นผู้ใช้ใหม่ (สร้างใหม่ปกติ)
+                    statusText.innerText = ""; 
                     statusText.className = "";
                 }
             } else {
@@ -296,88 +296,87 @@
         }
 
         // ส่งฟอร์มและตรวจสอบการบังคับแนบไฟล์
-document.getElementById('docForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+        document.getElementById('docForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-    if (selectedFilesArray.length === 0) {
-        alert("⚠️ กรุณาแนบเอกสาร (รูปภาพหรือ PDF) อย่างน้อย 1 ไฟล์ก่อนส่งเอกสารครับ");
-        document.getElementById('document_file').focus();
-        return;
-    }
+            if (selectedFilesArray.length === 0) {
+                alert("⚠️ กรุณาแนบเอกสาร (รูปภาพหรือ PDF) อย่างน้อย 1 ไฟล์ก่อนส่งเอกสารครับ");
+                document.getElementById('document_file').focus();
+                return;
+            }
 
-    const btn = document.getElementById('submitBtn');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressPercent = document.getElementById('progressPercent');
-    const progressText = document.getElementById('progressText');
+            const btn = document.getElementById('submitBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressText = document.getElementById('progressText');
 
-    btn.disabled = true;
-    btn.innerText = "⏳ กำลังส่งเอกสาร...";
-    progressContainer.classList.remove('hidden');
-    progressBar.style.width = '30%';
-    progressPercent.innerText = '30%';
+            btn.disabled = true;
+            btn.innerText = "⏳ กำลังส่งเอกสาร...";
+            progressContainer.classList.remove('hidden');
+            progressBar.style.width = '30%';
+            progressPercent.innerText = '30%';
 
-    showLoadingModal(); // แสดง Popup กำลังอัปโหลดเอกสาร
+            showLoadingModal();
 
-    const fileToBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve({
-            name: file.name,
-            type: file.type,
-            base64: reader.result.split(',')[1]
+            const fileToBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve({
+                    name: file.name,
+                    type: file.type,
+                    base64: reader.result.split(',')[1]
+                });
+                reader.onerror = error => reject(error);
+            });
+
+            try {
+                progressText.innerText = "กำลังเตรียมไฟล์เอกสาร...";
+                progressBar.style.width = '60%';
+                progressPercent.innerText = '60%';
+
+                const filePromises = selectedFilesArray.map(file => fileToBase64(file));
+                const encodedFiles = await Promise.all(filePromises);
+
+                const payload = {
+                    national_id: document.getElementById('national_id').value.trim(),
+                    full_name: document.getElementById('full_name').value.trim(),
+                    phone_number: document.getElementById('phone_number').value.trim(),
+                    house_status: document.getElementById('house_status').value,
+                    line_user_id: document.getElementById('line_user_id').value,
+                    drive_folder_id: document.getElementById('drive_folder_id').value,
+                    files: encodedFiles
+                };
+
+                const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
+
+                progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
+                progressBar.style.width = '90%';
+                progressPercent.innerText = '90%';
+
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                progressContainer.classList.add('hidden');
+                showSuccessModal();
+                btn.disabled = false;
+                btn.innerText = "ส่งเอกสาร";
+
+            } catch (err) {
+                console.error(err);
+                progressContainer.classList.add('hidden');
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง");
+                closeModal();
+                btn.disabled = false;
+                btn.innerText = "ส่งเอกสาร";
+            }
         });
-        reader.onerror = error => reject(error);
-    });
-
-    try {
-        progressText.innerText = "กำลังเตรียมไฟล์เอกสาร...";
-        progressBar.style.width = '60%';
-        progressPercent.innerText = '60%';
-
-        const filePromises = selectedFilesArray.map(file => fileToBase64(file));
-        const encodedFiles = await Promise.all(filePromises);
-
-        const payload = {
-            national_id: document.getElementById('national_id').value.trim(),
-            full_name: document.getElementById('full_name').value.trim(),
-            phone_number: document.getElementById('phone_number').value.trim(),
-            house_status: document.getElementById('house_status').value,
-            line_user_id: document.getElementById('line_user_id').value,
-            drive_folder_id: document.getElementById('drive_folder_id').value,
-            files: encodedFiles
-        };
-
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
-
-        progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
-        progressBar.style.width = '90%';
-        progressPercent.innerText = '90%';
-
-        // ใช้ fetch พร้อม mode: 'no-cors' เพื่อป้องกัน CORS Block จาก Google Apps Script
-        await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-            body: JSON.stringify(payload)
-        });
-
-        progressContainer.classList.add('hidden');
-        showSuccessModal(); // แสดง Popup อัปโหลดเอกสารสำเร็จ
-        btn.disabled = false;
-        btn.innerText = "ส่งเอกสาร";
-
-    } catch (err) {
-        console.error(err);
-        progressContainer.classList.add('hidden');
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง");
-        closeModal();
-        btn.disabled = false;
-        btn.innerText = "ส่งเอกสาร";
-    }
-});
     </script>
 </body>
 </html>
