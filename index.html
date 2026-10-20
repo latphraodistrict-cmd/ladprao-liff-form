@@ -350,36 +350,27 @@
 
                 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec';
 
-                if (GAS_WEB_APP_URL.includes('https://script.google.com/macros/s/AKfycbwJD_22XzLsWwo29UreAOQ3jiBsN5Z2C_n-H3k-Gbg_ELdZ9GIlZQrr5pYcNXinFcF_Cg/exec')) {
-                    console.log("Payload:", payload);
-                    progressBar.style.width = '100%';
-                    progressPercent.innerText = '100%';
-                    setTimeout(() => {
-                        progressContainer.classList.add('hidden');
-                        showSuccessModal(); // เปลี่ยน Popup เป็นอัปโหลดเอกสารสำเร็จ
-                        btn.disabled = false;
-                        btn.innerText = "ส่งเอกสาร";
-                    }, 800);
-                } else {
-                    progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
-                    progressBar.style.width = '70%';
-                    progressPercent.innerText = '70%';
+                // ส่งข้อมูลจริงไปยัง Google Apps Script
+                progressText.innerText = "กำลังอัปโหลดขึ้นสู่ระบบ...";
+                progressBar.style.width = '70%';
+                progressPercent.innerText = '70%';
 
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', GAS_WEB_APP_URL, true);
-                    xhr.setRequestHeader('Content-Type', 'application/json');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', GAS_WEB_APP_URL, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
 
-                    xhr.upload.onprogress = function(event) {
-                        if (event.lengthComputable) {
-                            const percent = Math.round((event.loaded / event.total) * 30) + 70;
-                            progressBar.style.width = percent + '%';
-                            progressPercent.innerText = percent + '%';
-                        }
-                    };
+                xhr.upload.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        const percent = Math.round((event.loaded / event.total) * 30) + 70;
+                        progressBar.style.width = percent + '%';
+                        progressPercent.innerText = percent + '%';
+                    }
+                };
 
-                    xhr.onload = function() {
-                        progressContainer.classList.add('hidden');
-                        if (xhr.status === 200) {
+                xhr.onload = function() {
+                    progressContainer.classList.add('hidden');
+                    if (xhr.status === 200) {
+                        try {
                             const result = JSON.parse(xhr.responseText);
                             if (result.status === "success") {
                                 showSuccessModal(); // เปลี่ยน Popup เป็นอัปโหลดเอกสารสำเร็จ
@@ -387,24 +378,28 @@
                                 alert("เกิดข้อผิดพลาด: " + result.message);
                                 closeModal();
                             }
-                        } else {
-                            alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                        } catch (parseErr) {
+                            alert("เกิดข้อผิดพลาดในการประมวลผลข้อมูลตอบกลับ");
                             closeModal();
                         }
-                        btn.disabled = false;
-                        btn.innerText = "ส่งเอกสาร";
-                    };
-
-                    xhr.onerror = function() {
-                        progressContainer.classList.add('hidden');
-                        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                    } else {
+                        alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ (Status: " + xhr.status + ")");
                         closeModal();
-                        btn.disabled = false;
-                        btn.innerText = "ส่งเอกสาร";
-                    };
+                    }
+                    btn.disabled = false;
+                    btn.innerText = "ส่งเอกสาร";
+                };
 
-                    xhr.send(JSON.stringify(payload));
-                }
+                xhr.onerror = function() {
+                    progressContainer.classList.add('hidden');
+                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                    closeModal();
+                    btn.disabled = false;
+                    btn.innerText = "ส่งเอกสาร";
+                };
+
+                xhr.send(JSON.stringify(payload));
+
             } catch (err) {
                 console.error(err);
                 progressContainer.classList.add('hidden');
